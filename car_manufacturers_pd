@@ -1,0 +1,69 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+
+#data processing
+#grabbing car model years from 2012 only
+df = pd.DataFrame(pd.read_csv("/cars.csv"))
+df.sort_values(by = ['Identification.Year'], ascending=False, axis = 0, inplace= True)  
+df2 = df.iloc[:1200]
+print(df2.isnull().values.any()) #no nan values
+print(df2)
+
+
+
+#calculate some statistics
+
+#average miles per gallon in the city of cars manufactured in 2012
+print(df2.agg({"Fuel Information.City mpg": ['mean']}))
+
+#mean of horsepower in cars manufactures in 2012
+print(df2.agg({"Engine Information.Engine Statistics.Horsepower": ['mean']}))
+
+
+#median of torque in cars manufactures in 2012
+print(df2.agg({"Engine Information.Engine Statistics.Torque": ['median']}))
+
+
+
+#graphing
+
+df_2012 = df[df['Identification.Year'] == 2012]
+fig, axs = plt.subplots(2, 2, figsize=(15, 10))
+
+# subplot 1: histogram of city mpg
+axs[0, 0].hist(df_2012['Fuel Information.City mpg'], bins=20, color='lightblue')
+axs[0, 0].set_xlabel('City MPG')
+axs[0, 0].set_ylabel('Frequency')
+axs[0, 0].set_title('City MPG Distribution')
+
+
+# subplot 2: line chart of horsepower over time
+df_avg = df.groupby('Identification.Year')[['Engine Information.Engine Statistics.Horsepower', 'Engine Information.Engine Statistics.Torque']].mean()
+axs[0, 1].plot(df_avg.index, df_avg['Engine Information.Engine Statistics.Horsepower'], color='purple')
+axs[0, 1].plot(df_avg.index, df_avg['Engine Information.Engine Statistics.Torque'], color='green')
+axs[0, 1].set_xlabel('Year')
+axs[0, 1].set_ylabel('Horsepower/Torque')
+axs[0, 1].set_title('Horsepower and Torque over Time')
+axs[0, 1].legend(['Horsepower', 'Torque'])
+
+
+# subplot 3: scatter chart of engine size vs. fuel efficiency
+axs[1, 0].scatter(df_2012['Engine Information.Engine Statistics.Horsepower'], df_2012['Fuel Information.Highway mpg'], color='green')
+axs[1, 0].set_xlabel('Horsepower')
+axs[1, 0].set_ylabel('Highway MPG')
+axs[1, 0].set_title('Horsepower vs. Fuel Efficiency')
+
+# subplot 4: bar chart of car make frequency
+make_counts = df['Identification.Make'].value_counts().head(10)
+axs[1, 1].bar(make_counts.index, make_counts.values, color='orange')
+axs[1, 1].set_xlabel('Make')
+axs[1, 1].set_ylabel('Count')
+axs[1, 1].set_title('Top 10 Car Makes', fontsize=8)
+axs[1, 1].tick_params(axis='x', labelrotation=90)
+axs[1, 1].set_xticks(range(len(make_counts.index)))
+axs[1, 1].set_xticklabels(make_counts.index, fontsize=8)
+
+plt.subplots_adjust(wspace=1, hspace=1)
+fig.suptitle('Car Data Analysis 2009-2012', fontsize=16)
+plt.show()
